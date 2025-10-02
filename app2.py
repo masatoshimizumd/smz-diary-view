@@ -12,8 +12,9 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds_dict), scope
 client = gspread.authorize(creds)
 
 # シート指定
-SHEET_KEY = "1RCNgsyViZNOmhWrTAm3xM7mLkj_mAuXjp4cVEfmUuqI"
+SHEET_KEY = "13AyMMtGUUw3T_vsGGgygG9VywbuBppSTN2PqFv-Tawo"
 sheet = client.open_by_key(SHEET_KEY).sheet1
+
 
 st.title("📖 Health Diary - 閲覧・検索専用")
 
@@ -76,3 +77,4 @@ if st.button("行を読み込み"):
             if submitted:
                 sheet.update(f"A{row_number}:F{row_number}", [[row_values[0], entry_date, title, content, tag, weather]])
                 st.success("更新しました！")
+
