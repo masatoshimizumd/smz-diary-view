@@ -1,18 +1,19 @@
 import streamlit as st
 import gspread
 import pandas as pd
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
 # ======================
 # Google Sheets 認証
 # ======================
-scope = ["https://spreadsheets.google.com/feeds",
+scope = ["https://www.googleapis.com/auth/spreadsheets",
          "https://www.googleapis.com/auth/drive"]
+
 creds_dict = st.secrets["gcp_service_account"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds_dict), scope)
+creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
-# シート指定（あなたのシートIDを入れる）
+# シート指定（必要なら "Sheet1" → 実際のシート名に変更してください）
 SHEET_KEY = "13AyMMtGUUw3T_vsGGgygG9VywbuBppSTN2PqFv-Tawo"
 sheet = client.open_by_key(SHEET_KEY).sheet1
 
