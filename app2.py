@@ -70,8 +70,7 @@ target_date = st.text_input("修正したい日付を入力 (YYYY-MM-DD)")
 
 if st.button("行を読み込み"):
     if target_date in df["entry_date"].values:
-        # Google Sheets 上の行番号を計算（ヘッダー分 +2）
-        row_index = df.index[df["entry_date"] == target_date][0] + 2  
+        row_index = df.index[df["entry_date"] == target_date][0] + 2  # シートの行番号
         row_values = sheet.row_values(row_index)
 
         with st.form("edit_form"):
@@ -83,16 +82,15 @@ if st.button("行を読み込み"):
 
             submitted = st.form_submit_button("保存")
             if submitted:
-                # update_cells で確実に更新
-                sheet.update(
-                    f"A{row_index}:F{row_index}",
-                    [[row_values[0], entry_date, title, content, tag, weather]]
-                )
+                # 各セルを直接更新
+                sheet.update_cell(row_index, 2, entry_date)  # entry_date
+                sheet.update_cell(row_index, 3, title)       # title
+                sheet.update_cell(row_index, 4, content)     # content
+                sheet.update_cell(row_index, 5, tag)         # tag
+                sheet.update_cell(row_index, 6, weather)     # weather
+
                 st.success(f"{entry_date} のデータを更新しました！")
                 st.cache_data.clear()  # キャッシュをクリアして即反映
     else:
         st.warning("指定した日付が見つかりませんでした。")
-
-
-
 
