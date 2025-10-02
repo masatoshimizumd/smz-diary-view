@@ -73,20 +73,19 @@ def edit_row(row_index, row_values):
 
         submitted = st.form_submit_button("保存")
         if submitted:
-            new_values = [
-                row_values[0],  # id
-                entry_date,
-                title,
-                content,
-                tag,
-                weather
-            ]
-
-            # 行全体を更新
-            sheet.update(f"A{row_index}:F{row_index}", [new_values])
+            # セル単位で更新（確実に反映される）
+            sheet.update_cell(row_index, 2, entry_date)   # entry_date
+            sheet.update_cell(row_index, 3, title)        # title
+            sheet.update_cell(row_index, 4, content)      # content
+            sheet.update_cell(row_index, 5, tag)          # tag
+            sheet.update_cell(row_index, 6, weather)      # weather
 
             st.success(f"{entry_date} のデータを更新しました！")
+
+            # 保存直後にキャッシュクリア & 再読み込み
             st.cache_data.clear()
+            df = load_data()
+            st.dataframe(df[df["entry_date"] == entry_date])  # 更新後の行を確認用に表示
 
 
 # ======================
