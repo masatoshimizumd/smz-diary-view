@@ -69,9 +69,17 @@ st.subheader("✏️ 修正")
 target_date = st.text_input("修正したい日付を入力 (YYYY-MM-DD)")
 
 if st.button("行を読み込み"):
+    # データフレームの日付を文字列化（比較がズレないように）
+    df["entry_date"] = df["entry_date"].astype(str)
+
     if target_date in df["entry_date"].values:
-        row_index = df.index[df["entry_date"] == target_date][0] + 2  # シートの行番号
+        # 行番号を取得（Google Sheets は1始まりなので +2 する）
+        row_index = df.index[df["entry_date"] == str(target_date)][0] + 2
         row_values = sheet.row_values(row_index)
+
+        # 👉 デバッグ出力（確認用）
+        st.write("🔍 row_index:", row_index)
+        st.write("🔍 row_values:", row_values)
 
         with st.form("edit_form"):
             entry_date = st.text_input("日付", row_values[1])
@@ -82,15 +90,16 @@ if st.button("行を読み込み"):
 
             submitted = st.form_submit_button("保存")
             if submitted:
-                # 各セルを直接更新
-                sheet.update_cell(row_index, 2, entry_date)  # entry_date
-                sheet.update_cell(row_index, 3, title)       # title
-                sheet.update_cell(row_index, 4, content)     # content
-                sheet.update_cell(row_index, 5, tag)         # tag
-                sheet.update_cell(row_index, 6, weather)     # weather
+                # まずはここはコメントアウトして確認だけ
+                # sheet.update_cell(row_index, 2, entry_date)
+                # sheet.update_cell(row_index, 3, title)
+                # sheet.update_cell(row_index, 4, content)
+                # sheet.update_cell(row_index, 5, tag)
+                # sheet.update_cell(row_index, 6, weather)
 
-                st.success(f"{entry_date} のデータを更新しました！")
-                st.cache_data.clear()  # キャッシュをクリアして即反映
+                st.success(f"{entry_date} のデータを更新しました！（まだデバッグ中）")
     else:
         st.warning("指定した日付が見つかりませんでした。")
+
+
 
