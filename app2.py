@@ -15,13 +15,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "credentials2.json", scope
-)
+# --- Google Sheets 認証 (Secrets版) ---
+creds_dict = st.secrets["gcp_service_account"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(dict(creds_dict), scope)
 client = gspread.authorize(creds)
 
-# health_data というシートを開く（1番目のシート）
-# 変更後（IDで開く方式）
 sheet = client.open_by_key("1RCNgsyViZNOmhWrTAm3xM7mLkj_mAuXjp4cVEfmUuqI").sheet1
 
 
@@ -115,3 +113,4 @@ if row_id <= len(df) + 1:
 # ======================
 st.subheader("📂 直近100件表示")
 st.write(df.tail(100))
+
