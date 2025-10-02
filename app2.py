@@ -95,22 +95,24 @@ if st.button("行を読み込み"):
             weather = st.text_input("天気", row_values[5])
 
             submitted = st.form_submit_button("保存")
-            if submitted:
-                try:
-                    # セル単位で更新（確実）
-                    ws.update_cell(row_index, 2, entry_date)
-                    ws.update_cell(row_index, 3, title)
-                    ws.update_cell(row_index, 4, content)
-                    ws.update_cell(row_index, 5, tag)
-                    ws.update_cell(row_index, 6, weather)
+         if submitted:
+             try:
+                 # 行一括で更新（セル単位ではなく B〜Fまとめて）
+                 ws.update(
+                     f"B{row_index}:F{row_index}",
+                     [[entry_date, title, content, tag, weather]],
+                     value_input_option="USER_ENTERED"
+                 )
 
-                    st.success(f"{entry_date} のデータを更新しました ✅")
+                 st.success(f"{entry_date} のデータを更新しました ✅")
 
-                    st.cache_data.clear()
-                    df = load_df(selected_tab)
-                    st.dataframe(df[df["entry_date"] == entry_date])
+                 st.cache_data.clear()
+                 df = load_df(selected_tab)
+                 st.dataframe(df[df["entry_date"] == entry_date])
 
-                except Exception as e:
-                    st.error(f"更新エラー: {e}")
-    else:
-        st.warning("指定した日付が見つかりませんでした。")
+             except Exception as e:
+                 st.error(f"更新エラー: {e}")
+
+             else:
+                 st.warning("指定した日付が見つかりませんでした。")
+
