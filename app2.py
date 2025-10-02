@@ -90,22 +90,28 @@ if st.button("行を読み込み"):
 
             submitted = st.form_submit_button("保存")
             if submitted:
-                # 行全体をまとめて更新（id は row_values[0] を保持）
+                # 新しい値をまとめる（ここで new_values を定義）
                 new_values = [
-                row_values[0],   # id
+                row_values[0],   # id は変更しない
                 entry_date,
                 title,
                 content,
                 tag,
                 weather
             ]
-            sheet.update(f"A{row_index}:F{row_index}", [new_values])
 
-            st.success(f"{entry_date} のデータを更新しました！")
-            st.cache_data.clear()  # キャッシュをクリアして即反映
+        # 行全体を更新
+        sheet.update(f"A{row_index}:F{row_index}", [new_values])
+
+        st.success(f"{entry_date} のデータを更新しました！")
+
+        # キャッシュクリアして再読み込み
+        st.cache_data.clear()
+
 
     else:
         st.warning("指定した日付が見つかりませんでした。")
+
 
 
 
