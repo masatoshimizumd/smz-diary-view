@@ -16,32 +16,20 @@ client = gspread.authorize(creds)
 # スプレッドシート指定
 SHEET_KEY = "13AyMMtGUUw3T_vsGGgygG9VywbuBppSTN2PqFv-Tawo"
 spreadsheet = client.open_by_key(SHEET_KEY)
+ws = spreadsheet.sheet1   # 必要なら worksheet("シート名") に変更
 
-st.title("📖 Health Diary - 閲覧・検索・修正（タブ指定対応版）")
-
-# ======================
-# 利用可能なタブ一覧を表示
-# ======================
-worksheets = spreadsheet.worksheets()
-tab_names = [w.title for w in worksheets]
-
-selected_tab = st.selectbox("操作するタブを選んでください:", tab_names)
-ws = spreadsheet.worksheet(selected_tab)
-
-st.info(f"👉 現在操作中のタブ: {ws.title}")
+st.title("📖 Health Diary - 閲覧・検索・修正（範囲一括更新版）")
 
 # ======================
 # データ取得
 # ======================
 @st.cache_data(ttl=300)
-def load_df(tab_name):
-    ws_tmp = spreadsheet.worksheet(tab_name)
-    records = ws_tmp.get_all_records()
+def load_df():
+    records = ws.get_all_records()
     return pd.DataFrame(records)
 
-df = load_df(selected_tab)
+df = load_df()
 
-# 欄が無い場合でも安全に列を揃える
 expected_cols = ["id", "entry_date", "title", "content", "tag", "weather"]
 for c in expected_cols:
     if c not in df.columns:
@@ -82,7 +70,7 @@ if st.button("行を読み込み"):
     if target_date in df["entry_date"].values:
         row_index = df.index[df["entry_date"] == str(target_date)][0] + 2
         row_values = ws.row_values(row_index)
-        row_values += [""] * max(0, 6 - len(row_values))  # 足りない列は空埋め
+        row_values += [""] * max(0, 6 - len(row_values))  # 足りない列を補完
 
         st.write("👉 Google Sheets 上の行番号:", row_index)
         st.write("👉 現在の行の値:", row_values[:6])
@@ -95,24 +83,22 @@ if st.button("行を読み込み"):
             weather = st.text_input("天気", row_values[5])
 
             submitted = st.form_submit_button("保存")
-         if submitted:
-             try:
-                 # 行一括で更新（セル単位ではなく B〜Fまとめて）
-                 ws.update(
-                     f"B{row_index}:F{row_index}",
-                     [[entry_date, title, content, tag, weather]],
-                     value_input_option="USER_ENTERED"
-                 )
+            if submitted:
+                try:
+                    # === 範囲一括更新（B〜F列） ===
+                    ws.update(
+                        f"B{row_index}:F{row_index}",
+                        [[entry_date, title, content, tag, weather]],
+                        value_input_option="USER_ENTERED"
+                    )
 
-                 st.success(f"{entry_date} のデータを更新しました ✅")
+                    st.success(f"{entry_date} のデータを更新しました ✅")
 
-                 st.cache_data.clear()
-                 df = load_df(selected_tab)
-                 st.dataframe(df[df["entry_date"] == entry_date])
+                    st.cache_data.clear()
+                    df = load_df()
+                    st.dataframe(df[df["entry_date"] == entry_date])
 
-             except Exception as e:
-                 st.error(f"更新エラー: {e}")
-
-             else:
-                 st.warning("指定した日付が見つかりませんでした。")
-
+                except Exception as e:
+                    st.error(f"更新エラー: {e}")
+    else:
+        st.warning("指定した日付が見つかりませんでした。")
