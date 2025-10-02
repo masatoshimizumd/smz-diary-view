@@ -66,11 +66,14 @@ st.dataframe(filtered.iloc[start:end])
 # ======================
 st.subheader("✏️ 修正")
 
-row_number = st.number_input("修正する行番号（ヘッダー除く行数で指定）", min_value=2, step=1)
+# 修正したい日付を入力
+target_date = st.text_input("修正したい日付を入力 (YYYY-MM-DD)")
 
 if st.button("行を読み込み"):
-    row_values = sheet.row_values(row_number)
-    if row_values:
+    if target_date in df["entry_date"].values:
+        row_index = df.index[df["entry_date"] == target_date][0] + 2  # シート行番号（ヘッダー分+2）
+        row_values = sheet.row_values(row_index)
+
         with st.form("edit_form"):
             entry_date = st.text_input("日付", row_values[1])
             title = st.text_input("タイトル", row_values[2])
@@ -80,7 +83,13 @@ if st.button("行を読み込み"):
 
             submitted = st.form_submit_button("保存")
             if submitted:
-                sheet.update(f"A{row_number}:F{row_number}", [[row_values[0], entry_date, title, content, tag, weather]])
-                st.success("更新しました！")
+                sheet.update(
+                    f"A{row_index}:F{row_index}",
+                    [[row_values[0], entry_date, title, content, tag, weather]]
+                )
+                st.success(f"{entry_date} のデータを更新しました！")
+    else:
+        st.warning("指定した日付が見つかりませんでした。")
+
 
 
