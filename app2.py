@@ -33,17 +33,22 @@ df = load_data()
 # ======================
 st.subheader("🔍 検索")
 
-keyword = st.text_input("キーワード（タイトル・内容・タグ・天気を対象）")
+query = st.text_input("キーワード（複数はコンマ区切りで入力してください）")
 
-if keyword:
-    filtered = df[
-        df["title"].str.contains(keyword, case=False, na=False) |
-        df["content"].str.contains(keyword, case=False, na=False) |
-        df["tag"].str.contains(keyword, case=False, na=False) |
-        df["weather"].str.contains(keyword, case=False, na=False)
-    ]
+if query:
+    # コンマ区切りで分割 → 前後の空白を除去
+    keywords = [q.strip() for q in query.split(",") if q.strip()]
+    filtered = df.copy()
+    for kw in keywords:
+        filtered = filtered[
+            filtered["title"].str.contains(kw, case=False, na=False) |
+            filtered["content"].str.contains(kw, case=False, na=False) |
+            filtered["tag"].str.contains(kw, case=False, na=False) |
+            filtered["weather"].str.contains(kw, case=False, na=False)
+        ]
 else:
     filtered = df
+
 
 # ======================
 # ページネーション
@@ -77,4 +82,5 @@ if st.button("行を読み込み"):
             if submitted:
                 sheet.update(f"A{row_number}:F{row_number}", [[row_values[0], entry_date, title, content, tag, weather]])
                 st.success("更新しました！")
+
 
